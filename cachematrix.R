@@ -1,6 +1,8 @@
 ## makeCacheMatrix and cacheSolve exploit R function closures to cache results
 ## of matrix inversion. Inversion is performed by feeding a matrix as the 
-## sole argument to solve(). 
+## sole argument to solve().Given that efficiency
+## is the major objective, there are are minimal error checks. In particular, note
+## assumption 2 below. 
 
 ## Usage: 1 Create a special matrix by feeding an ordinary matrix to makeCacheMatrix.
 ##        2 Call cacheSolve on the result of 1.
@@ -24,21 +26,21 @@
 ## Argument:
 ##    x is a matrix (assumed to be invertable).
 ## Return: Returns a list of getter and setter functions for both input data
-##    and inverted matrix. 
+##    and the inverted matrix. 
 
 
 makeCacheMatrix <- function(x = matrix()) {
     invMatrix <- NULL
     set <- function(y) {
-        x <<- y
-        invMatrix <<- NULL
+        x <<- y            # assignments made with <<- are to the calling enviroment
+        invMatrix <<- NULL # consequently, they will survive when makeCacheMatrix exits
     }
     get <- function() x 
     setInverse <- function(inv) invMatrix <<- inv
     getInverse <- function() invMatrix
     list(set = set, get = get,
          setInverse = setInverse,
-         getInverse = getInverse)
+         getInverse = getInverse) # returns a list a getter/setter functions
 }
 
 
@@ -47,7 +49,7 @@ makeCacheMatrix <- function(x = matrix()) {
 ## cacheSolve  defines a function that takes a special matrix created by makeCacheMatrix
 ##  as its argumenent and returns an inverted matrix.
 
-## Arguments: x is a special matrix
+## Argument: x is a special matrix
 ## Return: an inverted matrix
 
 
@@ -55,11 +57,11 @@ cacheSolve <- function(x, ...) {
         ## Returns a matrix that is the inverse of 'x'
         invMatrix <- x$getInverse()
         if(!is.null(invMatrix)) {
-            message("getting cached data") # Only useful to show when cach is used.
+            message("getting cached data") # Only useful to show when cache is used.
             return(invMatrix) 
         }
-        data <- x$get() # No cached result, so get data for calculation
-        invMatrix <- solve(data, ...)
-        x$setInverse(invMatrix)  # cache result
+        data <- x$get()               # No cached result, so get data for calculation
+        invMatrix <- solve(data, ...) #invert using solve function
+        x$setInverse(invMatrix)       # cache result
         invMatrix
 }

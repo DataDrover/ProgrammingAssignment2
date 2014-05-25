@@ -5,7 +5,10 @@ This code is based on a fork from:
 
 makeCacheMatrix and cacheSolve exploit R function closures to cache results
 of matrix inversion. Inversion is performed by feeding a matrix as the 
-## sole argument to solve(). Solve 
+sole argument to solve(). solve() is a general puprpose linear solver. When
+called with a matrix as a single argument, it will invert it. Given that efficiency
+is the major objective, there are are minimal error checks. In particular, note
+assumption 2 below.
 
 Usage:  1 Create a special matrix by feeding an ordinary matrix to makeCacheMatrix.
         2 Call cacheSolve on the result of 1.
